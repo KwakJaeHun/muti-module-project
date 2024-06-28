@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://user-database:3306/user
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1234
+    depends_on:
+      - user-database
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://order-database:3306/order
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1234
+    depends_on:
+      - order-database
+
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://product-database:3306/product
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1234
+    depends_on:
+      - product-database
+
+  user-database:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: user
+    ports:
+      - "23306:3306"
+    volumes:
+      - user_mysql_data:/var/lib/mysql
+      - ./my.cnf:/etc/my.cnf:ro  # 로컬에서 작성한 my.cnf 파일을 컨테이너의 MySQL 설정 파일로 마운트
+
+  order-database:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: order
+    ports:
+      - "23307:3306"
+    volumes:
+      - order_mysql_data:/var/lib/mysql
+      - ./my.cnf:/etc/my.cnf:ro  # 로컬에서 작성한 my.cnf 파일을 컨테이너의 MySQL 설정 파일로 마운트
+
+  product-database:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: product
+    ports:
+      - "23308:3306"
+    volumes:
+      - product_mysql_data:/var/lib/mysql
+      - ./my.cnf:/etc/my.cnf:ro  # 로컬에서 작성한 my.cnf 파일을 컨테이너의 MySQL 설정 파일로 마운트
+
+volumes:
+  user_mysql_data:
+  order_mysql_data:
+  product_mysql_data:
