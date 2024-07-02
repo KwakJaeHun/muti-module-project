@@ -1,6 +1,7 @@
 package com.jhkwak.userservice.service.user;
 
 import com.jhkwak.userservice.dto.user.LoginRequestDto;
+import com.jhkwak.userservice.dto.user.LoginResponseDto;
 import com.jhkwak.userservice.dto.user.SignupRequestDto;
 import com.jhkwak.userservice.entity.Response;
 import com.jhkwak.userservice.entity.ResponseCode;
@@ -10,6 +11,9 @@ import com.jhkwak.userservice.repository.user.UserRepository;
 import com.jhkwak.userservice.service.mail.MailService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,24 +101,55 @@ public class UserService {
         return new Response(ResponseCode.EMAIL_VERIFICATION_SUCCESS);
     }
 
-    public Response login(User user) {
+    @Transactional
+    public ResponseEntity<?> login(LoginRequestDto loginRequestDto, HttpServletResponse res) {
 
-        // 이메일 인증을 진행하지 않은 경우
-        if(!user.getEmailVerifiedStatus()){
-            // 만료 시간이 지나지 않았으면 인증 확인 응답
-            if(checkExpirationTime(user, "unUpdate")){
-                return new Response(ResponseCode.REQUIRE_VERIFICATION_EMAIL);
+        String email = loginRequestDto.getEmail();
+        String password = loginRequestDto.getPassword();
+
+        try {
+            // 사용자 확인
+            User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Not registered - Please try again"));;
+
+            // 이메일 인증을 진행하지 않은 경우
+            if(!user.getEmailVerifiedStatus()){
+                // 만료 시간이 지나지 않았으면 인증 확인 응답
+                if(checkExpirationTime(user, "unUpdate")){
+                    Response response = new Response(ResponseCode.REQUIRE_VERIFICATION_EMAIL);
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                }
+                else{
+                    Response response = new Response(ResponseCode.RE_VERIFICATION_EMAIL);
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                }
             }
-            else{
-                return new Response(ResponseCode.RE_VERIFICATION_EMAIL);
+
+            // 비밀번호 확인
+            if(!passwordEncoder.matches(password, user.getPassword())){
+                Response response = new Response(ResponseCode.USER_PASSWORD_WRONG);
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
             }
+
+            // Access Token 및 Refresh Token 생성
+            String accessToken = jwtUtil.createAccessToken(user.getId());
+            String refreshToken = jwtUtil.createRefreshToken();
+
+            // Refresh Token을 응답 헤더에 추가
+            res.addHeader("RefreshToken", refreshToken);
+            res.addHeader("AccessToken", accessToken);
+
+            // 로그인 성공 응답에 발급받은 토큰들 추가
+            LoginResponseDto responseDTO = new LoginResponseDto(accessToken, refreshToken, "Login successful!");
+            return ResponseEntity.ok(responseDTO);
         }
-
-        return new Response(ResponseCode.USER_LOGIN_SUCCESS);
+        catch (IllegalArgumentException e){
+            LoginResponseDto responseDTO = new LoginResponseDto(null, null, e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseDTO);
+        }
     }
 
     // 인증 만료시간 체크
-    private boolean checkExpirationTime(User user, String updateStatus){
+    public boolean checkExpirationTime(User user, String updateStatus){
         
         // 만료 시간이 지났으면 인증 메일 재전송
         if(LocalDateTime.now().minusHours(24).isAfter(user.getEmailVerificationExpiresAt())){

@@ -1,6 +1,6 @@
-package com.jhkwak.userservice.entity.user;
+package com.jhkwak.productservice.entity.product;
 
-import com.jhkwak.userservice.entity.product.Product;
+import com.jhkwak.productservice.entity.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,16 +16,14 @@ public class WishList {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-    private User user;
+    private Long userId;
 
     @ManyToOne
     @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
     private Product product;
 
-    public WishList(User user, Product product){
-        this.user = user;
+    public WishList(Long userId, Product product){
+        this.userId = userId;
         this.product = product;
     }
 }

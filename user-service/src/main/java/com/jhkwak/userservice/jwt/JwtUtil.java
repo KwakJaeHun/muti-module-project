@@ -4,7 +4,6 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.Key;
 import java.util.Base64;
@@ -26,9 +24,6 @@ public class JwtUtil {
 
     // Token 식별자
     public static final String BEARER_PREFIX = "Bearer ";
-
-    // 토큰 만료시간
-    private final long TOKEN_TIME = 60 * 60 * 1000L; // 1시간
 
     // Base64 Encode 한 SecretKey
     @Value("${jwt.secret.key}")
@@ -47,14 +42,29 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    // JWT 생성
-    public String createToken(String email){
+    // Access 토큰 생성
+    public String createAccessToken(Long userId) {
         Date date = new Date();
 
+        // 토큰 만료시간
+        long ACCESS_TOKEN_TIME = 24 * 60 * 60 * 1000L; // 24시간
         return BEARER_PREFIX +
                 Jwts.builder()
-                        .setSubject(email) // 사용자 식별값  ID
-                        .setExpiration(new Date(date.getTime() + TOKEN_TIME)) // 만료 시간
+                        .setSubject(String.valueOf(userId)) // 사용자 식별자값(ID)
+                        .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_TIME)) // 만료 시간
+                        .setIssuedAt(date) // 발급일
+                        .signWith(key, signatureAlgorithm) // 암호화 알고리즘
+                        .compact();
+    }
+
+    // Refresh 토큰 생성
+    public String createRefreshToken() {
+        Date date = new Date();
+
+        long REFRESH_TOKEN_TIME = 14 * 24 * 60 * 60 * 1000L; // 14일
+        return BEARER_PREFIX +
+                Jwts.builder()
+                        .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME)) // 만료 시간
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘
                         .compact();
@@ -84,7 +94,7 @@ public class JwtUtil {
     }
 
     // JWT 검증
-    public boolean validateToken(String token, HttpServletResponse res) {
+    public boolean validateToken(String token) {
         
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
@@ -99,27 +109,27 @@ public class JwtUtil {
             logger.error("JWT claims is empty, 잘못된 JWT 토큰 입니다.");
         }
 
-        jwtDelete(res);
+        // jwtDelete(res);
 
         return false;
     }
 
     // HttpServletRequest 에서 Cookie Value : JWT 가져오기
-    public String getTokenFromRequest(HttpServletRequest req) {
-        Cookie[] cookies = req.getCookies();
-        if(cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals(AUTHORIZATION_HEADER)) {
-                    try {
-                        return URLDecoder.decode(cookie.getValue(), "UTF-8"); // Encode 되어 넘어간 Value 다시 Decode
-                    } catch (UnsupportedEncodingException e) {
-                        return null;
-                    }
-                }
-            }
-        }
-        return null;
-    }
+//    public String getTokenFromRequest(HttpServletRequest req) {
+//        Cookie[] cookies = req.getCookies();
+//        if(cookies != null) {
+//            for (Cookie cookie : cookies) {
+//                if (cookie.getName().equals(AUTHORIZATION_HEADER)) {
+//                    try {
+//                        return URLDecoder.decode(cookie.getValue(), "UTF-8"); // Encode 되어 넘어간 Value 다시 Decode
+//                    } catch (UnsupportedEncodingException e) {
+//                        return null;
+//                    }
+//                }
+//            }
+//        }
+//        return null;
+//    }
     
     // 검증에 통과하지 못한 토큰은 삭제
     public void jwtDelete(HttpServletResponse response){

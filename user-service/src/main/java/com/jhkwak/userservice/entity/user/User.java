@@ -1,7 +1,6 @@
 package com.jhkwak.userservice.entity.user;
 
 import com.jhkwak.userservice.entity.TimeStamp;
-import com.jhkwak.userservice.entity.order.OrderList;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,15 +42,6 @@ public class User extends TimeStamp {
 
     @Column(nullable = false)
     private Boolean emailVerifiedStatus = false;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<WishList> wishes;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Cart> carts;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderList> orderList;
 
     public User(
         String name,

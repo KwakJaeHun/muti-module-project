@@ -4,13 +4,10 @@ import com.jhkwak.userservice.dto.user.LoginRequestDto;
 import com.jhkwak.userservice.dto.user.SignupRequestDto;
 import com.jhkwak.userservice.entity.Response;
 import com.jhkwak.userservice.jwt.JwtUtil;
-import com.jhkwak.userservice.security.UserDetailImpl;
 import com.jhkwak.userservice.service.user.UserService;
-import com.jhkwak.userservice.service.user.WishListService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,15 +44,14 @@ public class UserController {
         return "user/login";
 
     }
-    
+
     // 로그인
-    @GetMapping("/login-email-verification")
+    @PostMapping("/login")
     @ResponseBody
-    public ResponseEntity<?> login(@AuthenticationPrincipal UserDetailImpl userDetails){
+    public ResponseEntity<?> login(LoginRequestDto loginRequestDto, HttpServletResponse res){
 
-        Response response = userService.login(userDetails.getUser());
+        return userService.login(loginRequestDto, res);
 
-        return ResponseEntity.ok(response);
     }
 
     // 로그아웃
@@ -66,11 +62,9 @@ public class UserController {
         // jwt 삭제
         jwtUtil.jwtDelete(response);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Logout successful");
     }
 
-    
-    
     // 이메일 인증
     @GetMapping("/verify")
     @ResponseBody
@@ -80,5 +74,27 @@ public class UserController {
 
         return ResponseEntity.ok(response);
 
+    }
+
+    @PostMapping("/refresh-token")
+    public void refreshToken(
+        @RequestHeader("Authorization") String accessToken,
+        @RequestHeader("RefreshToken") String refreshToken,
+        HttpServletResponse res
+    )
+    {
+        String token = jwtUtil.substringToken(accessToken);
+        String userId = jwtUtil.getUserInfoFromToken(token).getSubject();
+
+        if (!jwtUtil.validateToken(token) && jwtUtil.validateToken(refreshToken)) {
+            String newAccessToken = jwtUtil.createAccessToken(Long.parseLong(userId));
+            String newRefreshToken = jwtUtil.createRefreshToken();
+
+
+            jwtUtil.addJwtToCookie(newAccessToken, res);
+            res.addHeader("RefreshToken", newRefreshToken);
+        } else {
+            throw new IllegalArgumentException("Invalid refresh token or access token.");
+        }
     }
 }

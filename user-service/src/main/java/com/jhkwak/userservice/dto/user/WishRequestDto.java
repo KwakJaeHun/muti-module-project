@@ -1,4 +1,4 @@
-package com.jhkwak.userservice.dto.product;
+package com.jhkwak.userservice.dto.user;
 
 import lombok.Getter;
 import lombok.Setter;

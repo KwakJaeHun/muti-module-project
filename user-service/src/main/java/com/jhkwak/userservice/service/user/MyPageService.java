@@ -4,6 +4,7 @@ import com.jhkwak.userservice.dto.user.InfoUpdateRequestDto;
 import com.jhkwak.userservice.dto.user.UserResponseDto;
 import com.jhkwak.userservice.entity.Response;
 import com.jhkwak.userservice.entity.user.User;
+import com.jhkwak.userservice.jwt.JwtUtil;
 import com.jhkwak.userservice.repository.user.MyPageRepository;
 import com.jhkwak.userservice.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +20,10 @@ import java.util.Optional;
 public class MyPageService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
-    public List<UserResponseDto> getUserInfo(Long userId) {
-        return userRepository.findById(userId).stream().map(UserResponseDto::new).toList();
+    public UserResponseDto getUserInfo(Long userId) {
+        return userRepository.findById(userId).map(UserResponseDto::new).orElseThrow(() -> new IllegalArgumentException("User not found with id:" + userId));
     }
 
     @Transactional

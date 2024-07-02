@@ -1,17 +1,16 @@
 package com.jhkwak.userservice.controller;
 
-import com.jhkwak.userservice.dto.product.WishRequestDto;
 import com.jhkwak.userservice.dto.user.*;
 import com.jhkwak.userservice.entity.Response;
 import com.jhkwak.userservice.entity.ResponseCode;
-import com.jhkwak.userservice.security.UserDetailImpl;
+import com.jhkwak.userservice.jwt.JwtUtil;
 import com.jhkwak.userservice.service.user.CartService;
 import com.jhkwak.userservice.service.user.MyPageService;
 import com.jhkwak.userservice.service.user.WishListService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,47 +23,49 @@ public class MyPageController {
     private final MyPageService myPageService;
     private final WishListService wishListService;
     private final CartService cartService;
+    private final JwtUtil jwtUtil;
 
     // 메인
     @GetMapping("/main")
-    public ResponseEntity<?> mainPage(@AuthenticationPrincipal UserDetailImpl userDetail)
+    public ResponseEntity<?> mainPage(
+        @RequestHeader("X-Authenticated-User") String userId
+    )
     {
-        List<UserResponseDto> userInfo  = myPageService.getUserInfo(userDetail.getId());
-        return ResponseEntity.ok(userInfo);
+        UserResponseDto dto = myPageService.getUserInfo(Long.parseLong(userId));
+        return ResponseEntity.ok(dto);
     }
 
     // 주소 업데이트
     @PutMapping("/address")
     public ResponseEntity<?> updateAddress(
-        @AuthenticationPrincipal UserDetailImpl userDetail,
+        @RequestHeader("X-Authenticated-User") String userId,
         @RequestBody InfoUpdateRequestDto infoUpdateRequestDto
     )
     {
-        System.out.println("저속확인");
-        myPageService.updateUserInfo(userDetail.getId(), infoUpdateRequestDto);
-        return ResponseEntity.ok().build();
+        myPageService.updateUserInfo(Long.parseLong(userId), infoUpdateRequestDto);
+        return ResponseEntity.ok("Success Change Address");
     }
 
     // 전화번호 업데이트
     @PutMapping("/phone")
     public ResponseEntity<?> updatePhone(
-        @AuthenticationPrincipal UserDetailImpl userDetail,
-        @RequestBody InfoUpdateRequestDto infoUpdateRequestDto
+            @RequestHeader("X-Authenticated-User") String userId,
+            @RequestBody InfoUpdateRequestDto infoUpdateRequestDto
     )
     {
-        myPageService.updateUserInfo(userDetail.getId(), infoUpdateRequestDto);
-        return ResponseEntity.ok().build();
+        myPageService.updateUserInfo(Long.parseLong(userId), infoUpdateRequestDto);
+        return ResponseEntity.ok("Success Change phone");
     }
 
     // 비밀번호 업데이트
     @PutMapping("/password")
     public ResponseEntity<?> updatePassword(
-        @AuthenticationPrincipal UserDetailImpl userDetail,
-        @RequestBody InfoUpdateRequestDto infoUpdateRequestDto
+            @RequestHeader("X-Authenticated-User") String userId,
+            @RequestBody InfoUpdateRequestDto infoUpdateRequestDto
     )
     {
-        if(myPageService.updateUserInfo(userDetail.getId(), infoUpdateRequestDto)){
-            return ResponseEntity.ok().build();
+        if(myPageService.updateUserInfo(Long.parseLong(userId), infoUpdateRequestDto)){
+            return ResponseEntity.ok("Success Change password");
         }
         else{
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response(ResponseCode.USER_PASSWORD_WRONG));
@@ -73,28 +74,32 @@ public class MyPageController {
 
     // wishList
     @GetMapping("/wish-list")
-    public ResponseEntity<?> wishList(@AuthenticationPrincipal UserDetailImpl userDetail)
+    public ResponseEntity<?> wishList(
+            @RequestHeader("Authorization") String accessToken
+    )
     {
-        List<WishListResponseDto> wishlist = wishListService.getWishList(userDetail.getId());
+        List<WishListResponseDto> wishlist = wishListService.getWishList(accessToken);
         return ResponseEntity.ok(wishlist);
     }
 
     // wish 삭제
     @DeleteMapping("/wish-delete")
     public ResponseEntity<?> wishDelete(
-            @AuthenticationPrincipal UserDetailImpl userDetail,
+            @RequestHeader("Authorization") String accessToken,
             @RequestBody WishRequestDto wishRequestDto
     )
     {
-        List<WishListResponseDto> wishlist = wishListService.wishDelete(userDetail.getUser(), wishRequestDto);
+        List<WishListResponseDto> wishlist = wishListService.wishDelete(accessToken, wishRequestDto);
         return ResponseEntity.ok(wishlist);
     }
 
     // 장바구니
     @GetMapping("/cart-list")
-    public ResponseEntity<?> cartList(@AuthenticationPrincipal UserDetailImpl userDetail)
+    public ResponseEntity<?> cartList(
+            @RequestHeader("Authorization") String accessToken
+    )
     {
-        List<CartResponseDto> cartList = cartService.getCartList(userDetail.getId());
+        List<CartResponseDto> cartList = cartService.getCartList(accessToken);
         return ResponseEntity.ok(cartList);
 
     }
@@ -102,23 +107,22 @@ public class MyPageController {
     // 장바구니 업데이트
     @PutMapping("/cart-update")
     public ResponseEntity<?> cartUpdate(
-            @AuthenticationPrincipal UserDetailImpl userDetail,
+            @RequestHeader("Authorization") String accessToken,
             @RequestBody CartRequestDto cartRequestDto
     )
     {
-        List<CartResponseDto> cartList = cartService.cartUpdate(userDetail.getId(), cartRequestDto);
+        List<CartResponseDto> cartList = cartService.cartUpdate(accessToken, cartRequestDto);
         return ResponseEntity.ok(cartList);
     }
-
 
     // 장바구니 삭제
     @DeleteMapping("/cart-delete")
     public ResponseEntity<?> cartDelete(
-            @AuthenticationPrincipal UserDetailImpl userDetail,
+            @RequestHeader("Authorization") String accessToken,
             @RequestBody CartRequestDto cartRequestDto
     )
     {
-        List<CartResponseDto> cartList = cartService.cartDelete(userDetail.getId(), cartRequestDto);
+        List<CartResponseDto> cartList = cartService.cartDelete(accessToken, cartRequestDto);
         return ResponseEntity.ok(cartList);
     }
 }

@@ -1,6 +1,6 @@
-package com.jhkwak.userservice.entity.user;
+package com.jhkwak.productservice.entity.product;
 
-import com.jhkwak.userservice.entity.product.Product;
+import com.jhkwak.productservice.entity.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
