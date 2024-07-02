@@ -1,18 +1,12 @@
 package com.jhkwak.productservice.controller;
 
-import com.jhkwak.productservice.dto.product.ProductDetailResponseDto;
-import com.jhkwak.productservice.dto.product.ProductRegRequestDto;
-import com.jhkwak.productservice.dto.product.ProductResponseDto;
-import com.jhkwak.productservice.dto.product.WishRequestDto;
-import com.jhkwak.productservice.dto.user.CartRequestDto;
-import com.jhkwak.productservice.dto.user.CartResponseDto;
-import com.jhkwak.productservice.entity.product.Product;
-import com.jhkwak.productservice.security.UserDetailImpl;
-import com.jhkwak.productservice.service.product.ProductService;
-import com.jhkwak.productservice.service.user.CartService;
+import com.jhkwak.productservice.dto.*;
+import com.jhkwak.productservice.entity.Product;
+import com.jhkwak.productservice.service.CartService;
+import com.jhkwak.productservice.service.ProductService;
+import com.jhkwak.productservice.service.WishListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,8 +17,18 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final WishListService wishListService;
     private final CartService cartService;
 
+    // 상품 등록
+    @PostMapping("/registration")
+    public Product productRegistration(
+            @RequestBody ProductRegRequestDto productRegRequestDto
+    ){
+        return productService.productRegistration(productRegRequestDto);
+    }
+    
+    // 상품 리스트
     @GetMapping("/list")
     public List<ProductResponseDto> productList(){
         return productService.productList();
@@ -34,31 +38,68 @@ public class ProductController {
     public List<ProductDetailResponseDto> productDetail(@PathVariable Long productId){
         return productService.productDetail(productId);
     }
-
-    @PostMapping("/registration")
-    public Product productRegistration(@RequestBody ProductRegRequestDto productRegRequestDto){
-        return productService.productRegistration(productRegRequestDto);
+    
+    // wish-list 조회
+    @GetMapping("/wish-list")
+    public ResponseEntity<?> wishList(
+            @RequestHeader("X-Authenticated-User") String userId
+    )
+    {
+        List<WishResponseDto> wishList = wishListService.getWishList(Long.parseLong(userId));
+        return ResponseEntity.ok(wishList);
     }
-
+    
+    // wish-list 추가
     @PostMapping("/wish-add")
     public ResponseEntity<?> wishAdd(
-            @AuthenticationPrincipal UserDetailImpl userDetail,
+            @RequestHeader("X-Authenticated-User") String userId,
             @RequestBody WishRequestDto wishRequestDto
     )
     {
-
-        productService.wishAdd(userDetail.getUser(), wishRequestDto);
-        return ResponseEntity.ok().build();
+        wishListService.wishAdd(Long.parseLong(userId), wishRequestDto);
+        return ResponseEntity.ok("Wish Add Success");
     }
 
-    // 장바구니 추가
-    @PostMapping("/cart-add")
-    public ResponseEntity<?> cartRegistration(
-            @AuthenticationPrincipal UserDetailImpl userDetail,
+    // wish-list 삭제
+    @DeleteMapping("/wish-delete")
+    public ResponseEntity<?> wishDelte(
+            @RequestHeader("X-Authenticated-User") String userId,
+            @RequestBody WishRequestDto wishRequestDto
+    )
+    {
+        List<WishResponseDto> wishList = wishListService.wishDelete(Long.parseLong(userId), wishRequestDto);
+        return ResponseEntity.ok(wishList);
+    }
+
+    // 장바구니 리스트
+    @GetMapping("/cart-list")
+    public ResponseEntity<?> carList(
+            @RequestHeader("X-Authenticated-User") String userId
+    )
+    {
+        List<CartResponseDto> cartList = cartService.getCartList(Long.parseLong(userId));
+        return ResponseEntity.ok(cartList);
+    }
+
+    // 장바구니 추가 또는 업데이트
+    @PutMapping("/cart-add")
+    public ResponseEntity<?> cartAdd(
+            @RequestHeader("X-Authenticated-User") String userId,
             @RequestBody CartRequestDto cartRequestDto
     )
     {
-        List<CartResponseDto> cartList = cartService.cartRegistration(userDetail.getId(), cartRequestDto);
+        List<CartResponseDto> cartList = cartService.cartUpdate(Long.parseLong(userId), cartRequestDto);
+        return ResponseEntity.ok(cartList);
+    }
+
+    // 장바구니 추가 또는 업데이트
+    @DeleteMapping("/cart-delete")
+    public ResponseEntity<?> cartDelete(
+            @RequestHeader("X-Authenticated-User") String userId,
+            @RequestBody CartRequestDto cartRequestDto
+    )
+    {
+        List<CartResponseDto> cartList = cartService.cartDelete(Long.parseLong(userId), cartRequestDto);
         return ResponseEntity.ok(cartList);
     }
 }

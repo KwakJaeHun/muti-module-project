@@ -11,6 +11,10 @@ spring:
           uri: lb://USER-SERVICE
           predicates:
             - Path=/user/**
+        - id: product-service
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/product/**
 
 eureka:
   instance:
@@ -23,9 +27,9 @@ eureka:
 
 logging:
   level:
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.web: DEBUG
-    org.springframework.http: DEBUG
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.web: TRACE
+    org.springframework.http: TRACE
 
 # jwt Secret Key
 jwt:

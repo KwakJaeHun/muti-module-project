@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 "/user/login",
                                 "/user/verify",
                                 "/product/list",
+                                "/product/registration",
                                 "/product/detail/**"
                         ).permitAll()
                         .anyExchange().authenticated())

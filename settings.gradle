@@ -1,2 +1,2 @@
 rootProject.name = 'multi-module-project'
-include 'user-service', 'order-service', 'product-service'
+include 'user-service', 'order-service', 'product-service', 'api-gateway', 'service-discovery'
