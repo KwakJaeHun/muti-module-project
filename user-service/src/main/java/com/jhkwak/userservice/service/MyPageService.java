@@ -1,19 +1,14 @@
-package com.jhkwak.userservice.service.user;
+package com.jhkwak.userservice.service;
 
-import com.jhkwak.userservice.dto.user.InfoUpdateRequestDto;
-import com.jhkwak.userservice.dto.user.UserResponseDto;
-import com.jhkwak.userservice.entity.Response;
-import com.jhkwak.userservice.entity.user.User;
+import com.jhkwak.userservice.dto.InfoUpdateRequestDto;
+import com.jhkwak.userservice.dto.UserResponseDto;
+import com.jhkwak.userservice.entity.User;
 import com.jhkwak.userservice.jwt.JwtUtil;
-import com.jhkwak.userservice.repository.user.MyPageRepository;
-import com.jhkwak.userservice.repository.user.UserRepository;
+import com.jhkwak.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

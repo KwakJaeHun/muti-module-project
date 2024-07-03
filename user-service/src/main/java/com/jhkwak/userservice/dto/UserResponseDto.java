@@ -1,6 +1,6 @@
-package com.jhkwak.userservice.dto.user;
+package com.jhkwak.userservice.dto;
 
-import com.jhkwak.userservice.entity.user.User;
+import com.jhkwak.userservice.entity.User;
 import lombok.Getter;
 import lombok.Setter;
 

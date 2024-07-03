@@ -37,6 +37,9 @@ dependencies {
 
 	// eureka 클라이언트
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+	// Feign
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 }
 
 bootRun {

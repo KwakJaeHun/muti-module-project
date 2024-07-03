@@ -1,13 +1,10 @@
 package com.jhkwak.userservice.controller;
 
-import com.jhkwak.userservice.dto.user.*;
+import com.jhkwak.userservice.dto.*;
 import com.jhkwak.userservice.entity.Response;
 import com.jhkwak.userservice.entity.ResponseCode;
-import com.jhkwak.userservice.jwt.JwtUtil;
-import com.jhkwak.userservice.service.user.CartService;
-import com.jhkwak.userservice.service.user.MyPageService;
-import com.jhkwak.userservice.service.user.WishListService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.jhkwak.userservice.fegin.ProductClient;
+import com.jhkwak.userservice.service.MyPageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +18,7 @@ import java.util.List;
 public class MyPageController {
 
     private final MyPageService myPageService;
-    private final WishListService wishListService;
-    private final CartService cartService;
-    private final JwtUtil jwtUtil;
+    private final ProductClient productClient;
 
     // 메인
     @GetMapping("/main")
@@ -72,13 +67,13 @@ public class MyPageController {
         }
     }
 
-    // wishList
+    // wish-list 등록
     @GetMapping("/wish-list")
     public ResponseEntity<?> wishList(
             @RequestHeader("Authorization") String accessToken
     )
     {
-        List<WishListResponseDto> wishlist = wishListService.getWishList(accessToken);
+        List<WishListResponseDto> wishlist = productClient.wishList();
         return ResponseEntity.ok(wishlist);
     }
 
@@ -89,7 +84,7 @@ public class MyPageController {
             @RequestBody WishRequestDto wishRequestDto
     )
     {
-        List<WishListResponseDto> wishlist = wishListService.wishDelete(accessToken, wishRequestDto);
+        List<WishListResponseDto> wishlist = productClient.wishDelete(wishRequestDto);
         return ResponseEntity.ok(wishlist);
     }
 
@@ -99,7 +94,7 @@ public class MyPageController {
             @RequestHeader("Authorization") String accessToken
     )
     {
-        List<CartResponseDto> cartList = cartService.getCartList(accessToken);
+        List<CartResponseDto> cartList = productClient.getCartList();
         return ResponseEntity.ok(cartList);
 
     }
@@ -111,7 +106,7 @@ public class MyPageController {
             @RequestBody CartRequestDto cartRequestDto
     )
     {
-        List<CartResponseDto> cartList = cartService.cartUpdate(accessToken, cartRequestDto);
+        List<CartResponseDto> cartList = productClient.cartUpdate(cartRequestDto);
         return ResponseEntity.ok(cartList);
     }
 
@@ -122,7 +117,7 @@ public class MyPageController {
             @RequestBody CartRequestDto cartRequestDto
     )
     {
-        List<CartResponseDto> cartList = cartService.cartDelete(accessToken, cartRequestDto);
+        List<CartResponseDto> cartList = productClient.cartDelete(cartRequestDto);
         return ResponseEntity.ok(cartList);
     }
 }

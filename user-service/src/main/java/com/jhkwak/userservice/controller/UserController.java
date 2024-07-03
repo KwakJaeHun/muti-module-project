@@ -1,10 +1,10 @@
 package com.jhkwak.userservice.controller;
 
-import com.jhkwak.userservice.dto.user.LoginRequestDto;
-import com.jhkwak.userservice.dto.user.SignupRequestDto;
+import com.jhkwak.userservice.dto.LoginRequestDto;
+import com.jhkwak.userservice.dto.SignupRequestDto;
 import com.jhkwak.userservice.entity.Response;
 import com.jhkwak.userservice.jwt.JwtUtil;
-import com.jhkwak.userservice.service.user.UserService;
+import com.jhkwak.userservice.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

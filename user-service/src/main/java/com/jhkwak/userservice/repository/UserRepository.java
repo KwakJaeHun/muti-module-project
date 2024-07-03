@@ -1,6 +1,6 @@
-package com.jhkwak.userservice.repository.user;
+package com.jhkwak.userservice.repository;
 
-import com.jhkwak.userservice.entity.user.User;
+import com.jhkwak.userservice.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

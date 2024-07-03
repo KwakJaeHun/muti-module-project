@@ -33,7 +33,8 @@ public class ProductController {
     public List<ProductResponseDto> productList(){
         return productService.productList();
     }
-
+    
+    // 상품 상세 정보
     @GetMapping("/detail/{productId}")
     public List<ProductDetailResponseDto> productDetail(@PathVariable Long productId){
         return productService.productDetail(productId);
@@ -73,7 +74,7 @@ public class ProductController {
 
     // 장바구니 리스트
     @GetMapping("/cart-list")
-    public ResponseEntity<?> carList(
+    public ResponseEntity<?> getCartList(
             @RequestHeader("X-Authenticated-User") String userId
     )
     {
@@ -81,9 +82,20 @@ public class ProductController {
         return ResponseEntity.ok(cartList);
     }
 
-    // 장바구니 추가 또는 업데이트
+    // 장바구니 추가
     @PutMapping("/cart-add")
     public ResponseEntity<?> cartAdd(
+            @RequestHeader("X-Authenticated-User") String userId,
+            @RequestBody CartRequestDto cartRequestDto
+    )
+    {
+        List<CartResponseDto> cartList = cartService.cartAdd(Long.parseLong(userId), cartRequestDto);
+        return ResponseEntity.ok(cartList);
+    }
+
+    // 장바구니 업데이트
+    @PutMapping("/cart-update")
+    public ResponseEntity<?> cartUpdate(
             @RequestHeader("X-Authenticated-User") String userId,
             @RequestBody CartRequestDto cartRequestDto
     )
@@ -92,7 +104,7 @@ public class ProductController {
         return ResponseEntity.ok(cartList);
     }
 
-    // 장바구니 추가 또는 업데이트
+    // 장바구니 삭제
     @DeleteMapping("/cart-delete")
     public ResponseEntity<?> cartDelete(
             @RequestHeader("X-Authenticated-User") String userId,

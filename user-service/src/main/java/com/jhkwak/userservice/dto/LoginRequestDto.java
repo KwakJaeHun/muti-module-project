@@ -1,4 +1,4 @@
-package com.jhkwak.userservice.dto.user;
+package com.jhkwak.userservice.dto;
 
 import lombok.Getter;
 import lombok.Setter;

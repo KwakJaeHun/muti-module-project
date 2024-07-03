@@ -1,17 +1,15 @@
-package com.jhkwak.userservice.service.user;
+package com.jhkwak.userservice.service;
 
-import com.jhkwak.userservice.dto.user.LoginRequestDto;
-import com.jhkwak.userservice.dto.user.LoginResponseDto;
-import com.jhkwak.userservice.dto.user.SignupRequestDto;
+import com.jhkwak.userservice.dto.LoginRequestDto;
+import com.jhkwak.userservice.dto.LoginResponseDto;
+import com.jhkwak.userservice.dto.SignupRequestDto;
 import com.jhkwak.userservice.entity.Response;
 import com.jhkwak.userservice.entity.ResponseCode;
-import com.jhkwak.userservice.entity.user.User;
+import com.jhkwak.userservice.entity.User;
 import com.jhkwak.userservice.jwt.JwtUtil;
-import com.jhkwak.userservice.repository.user.UserRepository;
-import com.jhkwak.userservice.service.mail.MailService;
+import com.jhkwak.userservice.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;

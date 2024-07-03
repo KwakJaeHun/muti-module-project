@@ -1,4 +1,4 @@
-package com.jhkwak.userservice.service.mail;
+package com.jhkwak.userservice.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;

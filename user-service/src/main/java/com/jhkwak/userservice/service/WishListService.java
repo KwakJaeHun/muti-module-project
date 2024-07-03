@@ -1,9 +1,8 @@
-package com.jhkwak.userservice.service.user;
+package com.jhkwak.userservice.service;
 
-import com.jhkwak.userservice.dto.user.WishListResponseDto;
-import com.jhkwak.userservice.dto.user.WishRequestDto;
-import com.jhkwak.userservice.entity.user.User;
-import com.jhkwak.userservice.repository.user.UserRepository;
+import com.jhkwak.userservice.dto.WishListResponseDto;
+import com.jhkwak.userservice.dto.WishRequestDto;
+import com.jhkwak.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
