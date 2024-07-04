@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
-@FeignClient(name = "order-service", url = "http://localhost:9000/order", configuration = FeignClientConfig.class)
+@FeignClient(name = "order-service", url = "http://api-gateway:9000/order", configuration = FeignClientConfig.class)
+// @FeignClient(name = "order-service", url = "http://localhost:9000/order", configuration = FeignClientConfig.class)
 public interface OrderClient {
 
     // 주문리스트

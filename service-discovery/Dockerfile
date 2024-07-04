@@ -8,7 +8,7 @@ RUN apk add --no-cache curl
 WORKDIR  /app
 
 # JAR 파일을 이미지로 복사
-COPY build/libs/user-service.jar user-service.jar
+COPY build/libs/service-discovery.jar service-discovery.jar
 
 # 컨테이너 시작 시 실행할 명령
-ENTRYPOINT ["java","-jar","user-service.jar"]
+ENTRYPOINT ["java","-jar","service-discovery.jar"]

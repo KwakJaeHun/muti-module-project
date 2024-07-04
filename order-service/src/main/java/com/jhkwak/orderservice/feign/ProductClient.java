@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "product-service", url = "http://localhost:9000/product", configuration = FeignClientConfig.class)
+@FeignClient(name = "product-service", url = "http://api-gateway:9000/product", configuration = FeignClientConfig.class)
+//@FeignClient(name = "product-service", url = "http://localhost:9000/product", configuration = FeignClientConfig.class)
 public interface ProductClient {
     
     // product_id 한개로 한개의 상품 조회

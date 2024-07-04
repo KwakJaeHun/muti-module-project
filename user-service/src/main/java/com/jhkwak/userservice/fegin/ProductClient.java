@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name = "product-service", url = "http://localhost:9000/product", configuration = FeignClientConfig.class)
+// docker에서의 통신을 위해 변경
+@FeignClient(name = "product-service", url = "http://api-gateway:9000/product", configuration = FeignClientConfig.class)
+// @FeignClient(name = "product-service", url = "http://localhost:9000/product", configuration = FeignClientConfig.class)
 public interface ProductClient {
 
     // wish-list 조회

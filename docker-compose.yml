@@ -1,45 +1,31 @@
 version: '3.8'
 
 services:
-  user-service:
+  eureka-server:
     build:
-      context: ./user-service
+      context: ./service-discovery
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://user-database:3306/user
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=1234
-    depends_on:
-      - user-database
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
-  order-service:
+  api-gateway:
     build:
-      context: ./order-service
+      context: ./api-gateway
       dockerfile: Dockerfile
     ports:
-      - "8081:8081"
+      - "9000:9000"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://order-database:3306/order
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=1234
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
     depends_on:
-      - order-database
+      eureka-server:
+        condition: service_healthy
 
-  product-service:
-    build:
-      context: ./product-service
-      dockerfile: Dockerfile
-    ports:
-      - "8082:8082"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://product-database:3306/product
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=1234
-    depends_on:
-      - product-database
-
+  ###### user-service ######
   user-database:
     image: mysql:latest
     environment:
@@ -51,6 +37,24 @@ services:
       - user_mysql_data:/var/lib/mysql
       - ./my.cnf:/etc/my.cnf:ro  # 로컬에서 작성한 my.cnf 파일을 컨테이너의 MySQL 설정 파일로 마운트
 
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://user-database:3306/user
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1234
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      user-database:
+        condition: service_started
+
+  ###### order-service ######
   order-database:
     image: mysql:latest
     environment:
@@ -62,6 +66,25 @@ services:
       - order_mysql_data:/var/lib/mysql
       - ./my.cnf:/etc/my.cnf:ro  # 로컬에서 작성한 my.cnf 파일을 컨테이너의 MySQL 설정 파일로 마운트
 
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://order-database:3306/order
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1234
+      - EUREKA_SERVER_URL=http://localhost:8761/eureka/
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      order-database:
+        condition: service_started
+
+  ###### product-service #####
   product-database:
     image: mysql:latest
     environment:
@@ -72,6 +95,23 @@ services:
     volumes:
       - product_mysql_data:/var/lib/mysql
       - ./my.cnf:/etc/my.cnf:ro  # 로컬에서 작성한 my.cnf 파일을 컨테이너의 MySQL 설정 파일로 마운트
+
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://product-database:3306/product
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1234
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      product-database:
+        condition: service_started
 
 volumes:
   user_mysql_data:
