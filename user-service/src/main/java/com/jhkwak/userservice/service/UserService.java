@@ -107,7 +107,7 @@ public class UserService {
 
         try {
             // 사용자 확인
-            User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Not registered - Please try again"));;
+            User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Not registered - Please try again"));
 
             // 이메일 인증을 진행하지 않은 경우
             if(!user.getEmailVerifiedStatus()){

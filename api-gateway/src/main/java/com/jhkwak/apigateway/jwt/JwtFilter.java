@@ -32,7 +32,7 @@ public class JwtFilter implements WebFilter, ApplicationContextAware {
             "/user/login-page",
             "/user/login",
             "/user/verify",
-            "/product/list",
+            "/product/list/**",
             "/product/registration",
             "/product/detail/**"
     };

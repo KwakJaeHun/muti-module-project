@@ -14,7 +14,8 @@ public class TokenAspect {
             "execution(* com.jhkwak.userservice.controller.MyPageController.wishDelete(..)) || " +
             "execution(* com.jhkwak.userservice.controller.MyPageController.cartList(..)) || " +
             "execution(* com.jhkwak.userservice.controller.MyPageController.cartUpdate(..)) || " +
-            "execution(* com.jhkwak.userservice.controller.MyPageController.cartDelete(..)))" +
+            "execution(* com.jhkwak.userservice.controller.MyPageController.cartDelete(..)) || " +
+            "execution(* com.jhkwak.userservice.controller.MyPageController.orderList(..)))" +
             "&& args(accessToken,..)")
     public void setFeignToken(String accessToken) {
         FeignTokenHolder.setToken(accessToken);

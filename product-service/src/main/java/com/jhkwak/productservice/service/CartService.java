@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,19 +38,21 @@ public class CartService {
     // cart 등록
     @Transactional
     public List<CartResponseDto> cartAdd(Long userId, CartRequestDto cartRequestDto) {
-        Product product = findByProduct(cartRequestDto.getProductId());
 
-        Optional<Cart> cartExist = cartExist(userId, product.getId());
-        // 장바구니에 동일한 상품이 존재하면 수량 더해서 업데이트
-        if(cartExist.isPresent()){
-            Cart cart = cartExist.get();
-            int sumQuantity = cart.getQuantity() + cartRequestDto.getQuantity();
-            cart.setQuantity(sumQuantity);
-        }
-        // 없으면 새로 등록
-        else{
-            Cart cart = new Cart(userId, product, cartRequestDto.getQuantity());
-            cartRepository.save(cart);
+        for (int i = 0; i < cartRequestDto.getProductId().size(); i++) {
+            List<Cart> cartExist = cartExist(userId, new ArrayList<>(Arrays.asList(cartRequestDto.getProductId().get(i))));
+
+            // 장바구니에 동일한 상품이 존재하면 수량 더해서 업데이트
+            if(!cartExist.isEmpty()){
+                int sumQuantity = cartExist.get(i).getQuantity() + cartRequestDto.getQuantity().get(i);
+                cartExist.get(i).setQuantity(sumQuantity);
+            }
+            // 없으면 새로 등록
+            else{
+                Product product = productRepository.findById(cartRequestDto.getProductId().get(i)).orElseThrow(() -> new IllegalArgumentException("Product not found with id"));
+                Cart cart = new Cart(userId, product, cartRequestDto.getQuantity().get(i));
+                cartRepository.save(cart);
+            }
         }
 
         return getCartList(userId);
@@ -57,13 +61,13 @@ public class CartService {
     // cart 업데이트
     @Transactional
     public List<CartResponseDto> cartUpdate(Long userId, CartRequestDto cartRequestDto) {
-        Product product = findByProduct(cartRequestDto.getProductId());
         
-        Optional<Cart> cartExist = cartExist(userId, product.getId());
+        List<Cart> cartExist = cartExist(userId, cartRequestDto.getProductId());
         // 장바구니에 동일한 상품이 존재하면 수량 더해서 업데이트
-        if(cartExist.isPresent()){
-            Cart cart = cartExist.get();
-            cart.setQuantity(cartRequestDto.getQuantity());
+        if(!cartExist.isEmpty()){
+            for (int i = 0; i < cartExist.size(); i++) {
+                cartExist.get(i).setQuantity(cartRequestDto.getQuantity().get(i));
+            }
         }
 
         return getCartList(userId);
@@ -72,10 +76,12 @@ public class CartService {
     // cart 삭제
     public List<CartResponseDto> cartDelete(Long userId, CartRequestDto cartRequestDto) {
 
-        Optional<Cart> cartExist = cartExist(userId, cartRequestDto.getProductId());
-        if(cartExist.isPresent()){
-            Cart cart = cartExist.get();
-            cartRepository.delete(cart);
+        List<Cart> cartExist = cartExist(userId, cartRequestDto.getProductId());
+        if(!cartExist.isEmpty()){
+
+            for(Cart cart : cartExist){
+                cartRepository.delete(cart);
+            }
         }
 
         return getCartList(userId);
@@ -85,7 +91,8 @@ public class CartService {
         return productRepository.findById(productId).orElseThrow(() -> new IllegalArgumentException("Product not found with id:" + productId));
     }
     
-    private Optional<Cart> cartExist(Long userId, Long productId){
-        return cartRepository.findByUserIdAndProductId(userId, productId);
+    private List<Cart> cartExist(Long userId, List<Long> productIds){
+
+        return cartRepository.findByUserIdAndProductIdIn(userId, productIds);
     }
 }

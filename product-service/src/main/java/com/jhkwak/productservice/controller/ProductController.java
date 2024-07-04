@@ -28,10 +28,22 @@ public class ProductController {
         return productService.productRegistration(productRegRequestDto);
     }
     
-    // 상품 리스트
-    @GetMapping("/list")
-    public List<ProductResponseDto> productList(){
-        return productService.productList();
+    // 상품 전체 리스트
+    @GetMapping("/list/all")
+    public List<ProductResponseDto> productListAll(){
+        return productService.productListAll();
+    }
+
+    // product_id 한개로 한개의 상품 조회
+    @PostMapping("/list")
+    public ProductResponseDto productList(@RequestBody ProductRequestDto productRequestDto){
+        return productService.productList(productRequestDto);
+    }
+
+    // product_id 여러개로 여러개의 list 조회
+    @PostMapping("/list/many")
+    public List<ProductResponseDto> productListMany(@RequestBody ProductListRequestDto productListRequestDto){
+        return productService.productListMany(productListRequestDto);
     }
     
     // 상품 상세 정보
@@ -83,7 +95,7 @@ public class ProductController {
     }
 
     // 장바구니 추가
-    @PutMapping("/cart-add")
+    @PostMapping("/cart-add")
     public ResponseEntity<?> cartAdd(
             @RequestHeader("X-Authenticated-User") String userId,
             @RequestBody CartRequestDto cartRequestDto
@@ -113,5 +125,15 @@ public class ProductController {
     {
         List<CartResponseDto> cartList = cartService.cartDelete(Long.parseLong(userId), cartRequestDto);
         return ResponseEntity.ok(cartList);
+    }
+
+    // 재고수량 업데이트
+    @PutMapping("/stock-update")
+    public ResponseEntity<?> stockUpdate(
+            @RequestBody CartRequestDto cartRequestDto
+    )
+    {
+        productService.stockUpdate(cartRequestDto);
+        return ResponseEntity.ok("Stock Update Success");
     }
 }

@@ -1,15 +1,13 @@
 package com.jhkwak.orderservice.controller;
 
-import com.jhkwak.orderservice.dto.order.OrderCancelRefundRequestDto;
-import com.jhkwak.orderservice.dto.order.OrderCheckOutListResponseDto;
-import com.jhkwak.orderservice.dto.order.OrderListRequestDto;
-import com.jhkwak.orderservice.dto.order.OrderListResponseDto;
-import com.jhkwak.orderservice.security.UserDetailImpl;
-import com.jhkwak.orderservice.service.order.OrderService;
+import com.jhkwak.orderservice.dto.OrderCancelRefundRequestDto;
+import com.jhkwak.orderservice.dto.OrderCheckOutListResponseDto;
+import com.jhkwak.orderservice.dto.OrderListRequestDto;
+import com.jhkwak.orderservice.dto.OrderListResponseDto;
+import com.jhkwak.orderservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,64 +22,67 @@ public class OrderController {
     // 주문리스트
     @GetMapping("/order-list")
     public ResponseEntity<?> orderList(
-            @AuthenticationPrincipal UserDetailImpl userDetail
+            @RequestHeader("X-Authenticated-User") String userId
     )
     {
-        List<OrderListResponseDto> orderListResponseDto = orderService.orderList(userDetail.getId());
+        List<OrderListResponseDto> orderListResponseDto = orderService.orderList(Long.parseLong(userId));
         return ResponseEntity.ok(orderListResponseDto);
     }
     
     // 주문 진행 페이지
      @GetMapping("/check-out")
      public ResponseEntity<?> checkOutPage(
-         @AuthenticationPrincipal UserDetailImpl userDetail,
-         @RequestParam("item[]") List<String> items
+             @RequestHeader("Authorization") String accessToken,
+             @RequestParam("item[]") List<String> items
      )
      {
-         OrderCheckOutListResponseDto orderCheckOutListResponseDto = orderService.checkOutPage(userDetail.getId(), items);
+         OrderCheckOutListResponseDto orderCheckOutListResponseDto = orderService.checkOutPage(accessToken, items);
          return ResponseEntity.ok(orderCheckOutListResponseDto);
      }
      
      // 주문 진행
     @PostMapping("/check-out")
     public ResponseEntity<?> checkOut(
-        @AuthenticationPrincipal UserDetailImpl userDetail,
-        @RequestBody List<OrderListRequestDto> orderListRequestDto
+            @RequestHeader("Authorization") String accessToken,
+            @RequestHeader("X-Authenticated-User") String userId,
+            @RequestBody List<OrderListRequestDto> orderListRequestDto
     )
     {
-        orderService.checkOut(userDetail.getId(), orderListRequestDto);
+        orderService.checkOut(accessToken, Long.parseLong(userId), orderListRequestDto);
         return ResponseEntity.ok().build();
     }
 
     // 주문 취소
     @PutMapping("/cancel")
     public ResponseEntity<?> orderCancel(
-            @AuthenticationPrincipal UserDetailImpl userDetail,
+            @RequestHeader("Authorization") String accessToken,
+            @RequestHeader("X-Authenticated-User") String userId,
             @RequestBody OrderCancelRefundRequestDto orderCancelRefundRequestDto
             )
     {
-        boolean isCanceled = orderService.orderCancel(userDetail.getId(), orderCancelRefundRequestDto);
+        boolean isCanceled = orderService.orderCancel(accessToken, Long.parseLong(userId), orderCancelRefundRequestDto);
         if(isCanceled){
-            return new ResponseEntity<>("취소 성공", HttpStatus.OK);
+            return new ResponseEntity<>("Cancel Success", HttpStatus.OK);
         }
         else{
-            return new ResponseEntity<>("취소 실패", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Cancel Failed", HttpStatus.BAD_REQUEST);
         }
     }
 
     // 반품 신청
     @PutMapping("/refund")
     public ResponseEntity<?> orderRefund(
-            @AuthenticationPrincipal UserDetailImpl userDetail,
+            @RequestHeader("Authorization") String accessToken,
+            @RequestHeader("X-Authenticated-User") String userId,
             @RequestBody OrderCancelRefundRequestDto orderCancelRefundRequestDto
     )
     {
-        boolean isRefunded = orderService.orderRefund(userDetail.getId(), orderCancelRefundRequestDto);
+        boolean isRefunded = orderService.orderRefund(accessToken, Long.parseLong(userId), orderCancelRefundRequestDto);
         if(isRefunded){
-            return new ResponseEntity<>("반품이 접수 되었습니다.", HttpStatus.OK);
+            return ResponseEntity.ok("Refund Success");
         }
         else{
-            return new ResponseEntity<>("배송완료 후 2일 이상된 상품은 반품이 불가합니다.", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Products that have been shipped more than 2 days after delivery cannot be refund");
         }
     }
 }

@@ -3,6 +3,7 @@ package com.jhkwak.userservice.controller;
 import com.jhkwak.userservice.dto.*;
 import com.jhkwak.userservice.entity.Response;
 import com.jhkwak.userservice.entity.ResponseCode;
+import com.jhkwak.userservice.fegin.OrderClient;
 import com.jhkwak.userservice.fegin.ProductClient;
 import com.jhkwak.userservice.service.MyPageService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class MyPageController {
 
     private final MyPageService myPageService;
     private final ProductClient productClient;
+    private final OrderClient orderClient;
 
     // 메인
     @GetMapping("/main")
@@ -119,5 +121,15 @@ public class MyPageController {
     {
         List<CartResponseDto> cartList = productClient.cartDelete(cartRequestDto);
         return ResponseEntity.ok(cartList);
+    }
+
+    // 주문 정보
+    @GetMapping("/order-list")
+    public ResponseEntity<?> orderList(
+            @RequestHeader("Authorization") String accessToken
+    )
+    {
+        List<OrderListResponseDto> orderList = orderClient.orderList();
+        return ResponseEntity.ok(orderList);
     }
 }

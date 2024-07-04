@@ -45,9 +45,9 @@ public class SecurityConfig {
                                 "/user/login-page",
                                 "/user/login",
                                 "/user/verify",
-                                "/product/list",
-                                "/product/registration",
-                                "/product/detail/**"
+                                "/product/list/**",
+                                "/product/detail/**",
+                                "/product/registration"
                         ).permitAll()
                         .anyExchange().authenticated())
                 .exceptionHandling(exceptionHandling -> exceptionHandling

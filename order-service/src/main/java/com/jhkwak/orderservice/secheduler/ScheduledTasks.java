@@ -1,12 +1,9 @@
 package com.jhkwak.orderservice.secheduler;
 
-import com.jhkwak.orderservice.entity.order.OrderListDetail;
-import com.jhkwak.orderservice.service.order.OrderService;
+import com.jhkwak.orderservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
