@@ -27,6 +27,9 @@ public class JwtFilter implements WebFilter, ApplicationContextAware {
 
     private static final String[] EXCLUDED_PATHS = {
             "/",
+            "/swagger-ui.html", // swagger ui
+            "/webjars/**", // swagger ui
+            "/v1/**", // swagger ui
             "/user/signup-page",
             "/user/signup",
             "/user/login-page",

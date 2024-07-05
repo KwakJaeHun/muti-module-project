@@ -40,7 +40,9 @@ public class SecurityConfig {
                 .authorizeExchange(authorizeExchange -> authorizeExchange
                         .pathMatchers(
                                 "/",
-                                "/user/signup-page",
+                                "/swagger-ui.html", // swagger ui
+                                "/webjars/**", // swagger ui
+                                "/v1/**", // swagger ui
                                 "/user/signup",
                                 "/user/login-page",
                                 "/user/login",

@@ -39,3 +39,18 @@ logging:
 jwt:
   secret:
     key: 7Iqk7YyM66W07YOA7L2U65Sp7YG065+9U3ByaW5n6rCV7J2Y7Yqc7YSw7LWc7JuQ67mI7J6F64uI64ukLg==
+
+
+# swagger
+springdoc:
+  api-docs:
+    path: /v1/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: user-service
+        url: http://localhost:8080/v1/user-service
+      - name: order-service
+        url: http://localhost:8081/v1/order-service
+      - name: product-service
+        url: http://localhost:8082/v1/product-service

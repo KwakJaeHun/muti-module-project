@@ -43,6 +43,9 @@ dependencies {
 	// WebFlux 의존성 - Spring Cloud Gateway는 Spring WebFlux를 기반으로 하므로 Spring MVC와는 호환되지 않음
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+	// swagger
+	implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.1.0'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
