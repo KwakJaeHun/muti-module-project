@@ -1,7 +1,7 @@
 package com.jhkwak.userservice.service;
 
 import com.jhkwak.userservice.dto.LoginRequestDto;
-import com.jhkwak.userservice.dto.LoginResponseDto;
+import com.jhkwak.userservice.dto.UserResponseDto;
 import com.jhkwak.userservice.dto.SignupRequestDto;
 import com.jhkwak.userservice.entity.Response;
 import com.jhkwak.userservice.entity.ResponseCode;
@@ -10,8 +10,8 @@ import com.jhkwak.userservice.jwt.JwtUtil;
 import com.jhkwak.userservice.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -100,7 +100,8 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseEntity<?> login(LoginRequestDto loginRequestDto, HttpServletResponse res) {
+    @CachePut(cacheNames = "userInfo", key = "#result.getUserId()", condition = "#result.getName() != null")
+    public UserResponseDto login(LoginRequestDto loginRequestDto, HttpServletResponse res) {
 
         String email = loginRequestDto.getEmail();
         String password = loginRequestDto.getPassword();
@@ -113,19 +114,16 @@ public class UserService {
             if(!user.getEmailVerifiedStatus()){
                 // 만료 시간이 지나지 않았으면 인증 확인 응답
                 if(checkExpirationTime(user, "unUpdate")){
-                    Response response = new Response(ResponseCode.REQUIRE_VERIFICATION_EMAIL);
-                    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                    return new UserResponseDto(HttpStatus.CONFLICT.value(), "Please check the mail and complete the authentication");
                 }
                 else{
-                    Response response = new Response(ResponseCode.RE_VERIFICATION_EMAIL);
-                    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                    return new UserResponseDto(HttpStatus.CONFLICT.value(), "The authentication has expired. Please check your mail");
                 }
             }
 
             // 비밀번호 확인
             if(!passwordEncoder.matches(password, user.getPassword())){
-                Response response = new Response(ResponseCode.USER_PASSWORD_WRONG);
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                return new UserResponseDto(HttpStatus.CONFLICT.value(), "Password does not match");
             }
 
             // Access Token 및 Refresh Token 생성
@@ -137,12 +135,11 @@ public class UserService {
             res.addHeader("AccessToken", accessToken);
 
             // 로그인 성공 응답에 발급받은 토큰들 추가
-            LoginResponseDto responseDTO = new LoginResponseDto(accessToken, refreshToken, "Login successful!");
-            return ResponseEntity.ok(responseDTO);
+            return new UserResponseDto(HttpStatus.OK.value(), accessToken, "Success Login", refreshToken, user);
         }
         catch (IllegalArgumentException e){
-            LoginResponseDto responseDTO = new LoginResponseDto(null, null, e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseDTO);
+            return new UserResponseDto(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
+
         }
     }
 

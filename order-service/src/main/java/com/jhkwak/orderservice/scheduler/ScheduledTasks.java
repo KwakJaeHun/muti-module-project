@@ -1,4 +1,4 @@
-package com.jhkwak.orderservice.secheduler;
+package com.jhkwak.orderservice.scheduler;
 
 import com.jhkwak.orderservice.service.OrderService;
 import lombok.RequiredArgsConstructor;

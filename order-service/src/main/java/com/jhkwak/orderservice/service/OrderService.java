@@ -10,6 +10,8 @@ import com.jhkwak.orderservice.repository.OrderListDetailRepository;
 import com.jhkwak.orderservice.repository.OrderListRepository;
 import com.jhkwak.orderservice.repository.RefundRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j(topic = "동시성 테스트")
 public class OrderService {
 
     private final OrderListRepository orderListRepository;
@@ -25,6 +28,7 @@ public class OrderService {
     private final RefundRepository refundRepository;
     private final UserClient userClient;
     private final ProductClient productClient;
+    private final Random random = new Random();
 
     // 주문 정보 list
     public List<OrderListResponseDto> orderList(Long userId) {
@@ -106,8 +110,37 @@ public class OrderService {
     }
     
     // 주문 진행
-    @Transactional
-    public void checkOut(String accessToken, Long userId, List<OrderListRequestDto> orderListRequestDto) {
+    public boolean checkOut(String accessToken, Long userId, List<OrderListRequestDto> orderListRequestDto) {
+
+        // 20% 실패처리
+//        if (random.nextDouble() < 0.2) {
+//            log.info("결제 진입시 실패");
+//            return false;
+//        }
+
+        // 주문된 장바구니 데이터 삭제 및 재고 반영 데이터 생성
+        List<Long> productIds = new ArrayList<>();
+        List<Integer> productQuantity = new ArrayList<>();
+        for(OrderListRequestDto dto : orderListRequestDto){
+            productIds.add(dto.getProductId());
+            productQuantity.add(dto.getQuantity());
+        }
+
+        CartAndStockRequestDto stockMinusUpdateAndCartDelete = new CartAndStockRequestDto("minus", productIds, productQuantity);
+
+        // 재고 확인 및 재고 감소
+        String purchaseSuccess = productClient.stockUpdate(stockMinusUpdateAndCartDelete);
+        if(purchaseSuccess.equals("Failed")){
+            return false;
+        }
+
+        // 20% 실패처리
+//        if (random.nextDouble() < 0.2) {
+//            log.info("결제 진행 중 실패");
+//            CartAndStockRequestDto stockPlusUpdate = new CartAndStockRequestDto("plus", productIds, productQuantity);
+//            productClient.stockUpdate(stockPlusUpdate);
+//            return false;
+//        }
 
         // 주문 상세 만들기
         List<OrderListDetail> orderListDetails  =  orderListRequestDto.stream()
@@ -124,20 +157,21 @@ public class OrderService {
 
         // 주문 정보 생성
         OrderList orderList = new OrderList(userId, orderListDetails, 'Y');
-        orderListRepository.save(orderList);
-
-        
-        // 주문된 장바구니 데이터 삭제 및 재고 반영
-        List<Long> productIds = new ArrayList<>();
-        List<Integer> productQuantity = new ArrayList<>();
-        for(OrderListRequestDto dto : orderListRequestDto){
-            productIds.add(dto.getProductId());
-            productQuantity.add(dto.getQuantity());
+        try {
+            orderListRepository.save(orderList);
+        } catch (Exception e) {
+            log.error("Order save failed", e);
+            return false;
         }
 
-        CartAndStockRequestDto cartAndStockRequestDto = new CartAndStockRequestDto("minus", productIds, productQuantity);
-        productClient.cartDelete(cartAndStockRequestDto);
-        productClient.stockUpdate(cartAndStockRequestDto);
+        orderFinishCartDelete(stockMinusUpdateAndCartDelete);
+        
+        return true;
+    }
+
+    @Async
+    public void orderFinishCartDelete(CartAndStockRequestDto stockMinusUpdateAndCartDelete){
+        productClient.cartDelete(stockMinusUpdateAndCartDelete);
     }
     
     // 주문 취소

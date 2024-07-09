@@ -27,4 +27,18 @@ public class ProductStock {
     public ProductStock(int stockQuantity) {
         this.stockQuantity = stockQuantity;
     }
+
+    public void decrease(int quantity) {
+        if ((stockQuantity - quantity) < 0) {
+            throw new IllegalArgumentException();
+        }
+        stockQuantity -= quantity;
+    }
+
+    public void increase(int quantity) {
+        if ((stockQuantity - quantity) < 0) {
+            throw new IllegalArgumentException();
+        }
+        stockQuantity -= quantity;
+    }
 }

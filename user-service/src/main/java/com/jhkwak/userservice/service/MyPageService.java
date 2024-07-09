@@ -6,6 +6,7 @@ import com.jhkwak.userservice.entity.User;
 import com.jhkwak.userservice.jwt.JwtUtil;
 import com.jhkwak.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ public class MyPageService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
+    @Cacheable(cacheNames = "userInfo", key = "#userId")
     public UserResponseDto getUserInfo(Long userId) {
         return userRepository.findById(userId).map(UserResponseDto::new).orElseThrow(() -> new IllegalArgumentException("User not found with id:" + userId));
     }

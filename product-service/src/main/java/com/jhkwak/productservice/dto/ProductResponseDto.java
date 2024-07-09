@@ -15,6 +15,8 @@ public class ProductResponseDto {
     private Character soldOutStatus;
     private Character newStatus;
     private Character bestStatus;
+    private int stockQuantity;
+
 
     public ProductResponseDto(Product product){
         this.productId = product.getId();
@@ -24,6 +26,6 @@ public class ProductResponseDto {
         this.soldOutStatus = product.getSoldOutStatus();
         this.newStatus = product.getNewStatus();
         this.bestStatus = product.getBestStatus();
-
+        this.stockQuantity = product.getProductStock().getStockQuantity();
     }
 }

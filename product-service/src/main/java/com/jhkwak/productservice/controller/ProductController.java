@@ -35,7 +35,7 @@ public class ProductController {
     }
 
     // product_id 한개로 한개의 상품 조회
-    @PostMapping("/list")
+    @PostMapping("/list/one")
     public ProductResponseDto productList(@RequestBody ProductRequestDto productRequestDto){
         return productService.productList(productRequestDto);
     }
@@ -133,7 +133,12 @@ public class ProductController {
             @RequestBody CartRequestDto cartRequestDto
     )
     {
-        productService.stockUpdate(cartRequestDto);
-        return ResponseEntity.ok("Stock Update Success");
+        boolean updateSuccess = productService.stockUpdate(cartRequestDto);
+        if(updateSuccess){
+            return ResponseEntity.ok("Success");
+        }
+        else{
+            return ResponseEntity.ok("Failed");
+        }
     }
 }

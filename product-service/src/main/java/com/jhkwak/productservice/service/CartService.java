@@ -78,10 +78,7 @@ public class CartService {
 
         List<Cart> cartExist = cartExist(userId, cartRequestDto.getProductId());
         if(!cartExist.isEmpty()){
-
-            for(Cart cart : cartExist){
-                cartRepository.delete(cart);
-            }
+            cartRepository.deleteAll(cartExist);
         }
 
         return getCartList(userId);

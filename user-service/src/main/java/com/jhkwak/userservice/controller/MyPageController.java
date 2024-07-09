@@ -7,6 +7,7 @@ import com.jhkwak.userservice.fegin.OrderClient;
 import com.jhkwak.userservice.fegin.ProductClient;
 import com.jhkwak.userservice.service.MyPageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

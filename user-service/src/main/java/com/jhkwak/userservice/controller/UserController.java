@@ -1,6 +1,7 @@
 package com.jhkwak.userservice.controller;
 
 import com.jhkwak.userservice.dto.LoginRequestDto;
+import com.jhkwak.userservice.dto.UserResponseDto;
 import com.jhkwak.userservice.dto.SignupRequestDto;
 import com.jhkwak.userservice.entity.Response;
 import com.jhkwak.userservice.jwt.JwtUtil;
@@ -50,8 +51,8 @@ public class UserController {
     @ResponseBody
     public ResponseEntity<?> login(LoginRequestDto loginRequestDto, HttpServletResponse res){
 
-        return userService.login(loginRequestDto, res);
-
+        UserResponseDto userResponseDto = userService.login(loginRequestDto, res);
+        return ResponseEntity.status(userResponseDto.getStatus()).body(userResponseDto);
     }
 
     // 로그아웃

@@ -48,8 +48,11 @@ public class OrderController {
             @RequestBody List<OrderListRequestDto> orderListRequestDto
     )
     {
-        orderService.checkOut(accessToken, Long.parseLong(userId), orderListRequestDto);
-        return ResponseEntity.ok().build();
+        boolean purchaseSuccess = orderService.checkOut(accessToken, Long.parseLong(userId), orderListRequestDto);
+        if(!purchaseSuccess){
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body("Failed");
+        }
+        return ResponseEntity.ok("Success");
     }
 
     // 주문 취소

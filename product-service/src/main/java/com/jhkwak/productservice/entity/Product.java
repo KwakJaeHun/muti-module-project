@@ -77,4 +77,12 @@ public class Product extends TimeStamp {
         this.productStock = productStock;
         productStock.setProduct(this);
     }
+
+    public void purchase(int quantity) {
+        productStock.decrease(quantity);
+    }
+
+    public void refund(int quantity) {
+        productStock.increase(quantity);
+    }
 }
