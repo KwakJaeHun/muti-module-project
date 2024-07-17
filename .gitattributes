@@ -1,0 +1,5 @@
+* text=auto
+*.xml text eol=lf
+*.properties text eol=lf
+*.log text eol=lf
+*.js text eol=lf
