@@ -1,39 +1,39 @@
 version: '3.8'
 
 services:
-#  eureka-server:
-#    build:
-#      context: ./service-discovery
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8761:8761"
-#    healthcheck:
-#      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 5
+  eureka-server:
+    build:
+      context: ./service-discovery
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   redis:
     image: redis:latest
     ports:
-      - "6382:6379"
+      - "6379:6379"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 30s
       timeout: 10s
       retries: 5
 
-#  api-gateway:
-#    build:
-#      context: ./api-gateway
-#      dockerfile: Dockerfile
-#    ports:
-#      - "9000:9000"
-#    environment:
-#      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
-#    depends_on:
-#      eureka-server:
-#        condition: service_healthy
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    environment:
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
+    depends_on:
+      eureka-server:
+        condition: service_healthy
 
   ###### user-service ######
   user-database:
@@ -47,22 +47,22 @@ services:
       - user_mysql_data:/var/lib/mysql
       - ./my.cnf:/etc/my.cnf:ro  # 로컬에서 작성한 my.cnf 파일을 컨테이너의 MySQL 설정 파일로 마운트
 
-#  user-service:
-#    build:
-#      context: ./user-service
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8080:8080"
-#    environment:
-#      - SPRING_DATASOURCE_URL=jdbc:mysql://user-database:3306/user
-#      - SPRING_DATASOURCE_USERNAME=root
-#      - SPRING_DATASOURCE_PASSWORD=1234
-#      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
-#    depends_on:
-#      eureka-server:
-#        condition: service_healthy
-#      user-database:
-#        condition: service_started
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://user-database:3306/user
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1234
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      user-database:
+        condition: service_started
 
   ###### order-service ######
   order-database:
@@ -76,23 +76,23 @@ services:
       - order_mysql_data:/var/lib/mysql
       - ./my.cnf:/etc/my.cnf:ro  # 로컬에서 작성한 my.cnf 파일을 컨테이너의 MySQL 설정 파일로 마운트
 
-#  order-service:
-#    build:
-#      context: ./order-service
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8081:8081"
-#    environment:
-#      - SPRING_DATASOURCE_URL=jdbc:mysql://order-database:3306/order
-#      - SPRING_DATASOURCE_USERNAME=root
-#      - SPRING_DATASOURCE_PASSWORD=1234
-#      - EUREKA_SERVER_URL=http://localhost:8761/eureka/
-#      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
-#    depends_on:
-#      eureka-server:
-#        condition: service_healthy
-#      order-database:
-#        condition: service_started
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://order-database:3306/order
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1234
+      - EUREKA_SERVER_URL=http://localhost:8761/eureka/
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      order-database:
+        condition: service_started
 
   ###### product-service #####
   product-database:
@@ -106,24 +106,38 @@ services:
       - product_mysql_data:/var/lib/mysql
       - ./my.cnf:/etc/my.cnf:ro  # 로컬에서 작성한 my.cnf 파일을 컨테이너의 MySQL 설정 파일로 마운트
 
-#  product-service:
-#    build:
-#      context: ./product-service
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8082:8082"
-#    environment:
-#      - SPRING_DATASOURCE_URL=jdbc:mysql://product-database:3306/product
-#      - SPRING_DATASOURCE_USERNAME=root
-#      - SPRING_DATASOURCE_PASSWORD=1234
-#      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
-#    depends_on:
-#      eureka-server:
-#        condition: service_healthy
-#      product-database:
-#        condition: service_started
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://product-database:3306/product
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1234
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      product-database:
+        condition: service_started
+
+  jenkins:
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    user: root
+    ports:
+      - "8888:8080"  # Jenkins 웹 UI 포트
+      - "50000:50000"  # Jenkins 에이전트와의 통신 포트
+    volumes:
+      - "E:/project/multi-module-project/jenkins/jenkins_home:/var/jenkins_home"
+      - "E:/project/multi-module-project/jenkins/.ssh:/root/.ssh"
 
 volumes:
   user_mysql_data:
   order_mysql_data:
   product_mysql_data:
+  jenkins_home:

@@ -113,10 +113,10 @@ public class OrderService {
     public boolean checkOut(String accessToken, Long userId, List<OrderListRequestDto> orderListRequestDto) {
 
         // 20% 실패처리
-//        if (random.nextDouble() < 0.2) {
-//            log.info("결제 진입시 실패");
-//            return false;
-//        }
+        if (random.nextDouble() < 0.2) {
+            log.info("결제 진입시 실패");
+            return false;
+        }
 
         // 주문된 장바구니 데이터 삭제 및 재고 반영 데이터 생성
         List<Long> productIds = new ArrayList<>();
@@ -135,12 +135,12 @@ public class OrderService {
         }
 
         // 20% 실패처리
-//        if (random.nextDouble() < 0.2) {
-//            log.info("결제 진행 중 실패");
-//            CartAndStockRequestDto stockPlusUpdate = new CartAndStockRequestDto("plus", productIds, productQuantity);
-//            productClient.stockUpdate(stockPlusUpdate);
-//            return false;
-//        }
+        if (random.nextDouble() < 0.2) {
+            log.info("결제 진행 중 실패");
+            CartAndStockRequestDto stockPlusUpdate = new CartAndStockRequestDto("plus", productIds, productQuantity);
+            productClient.stockUpdate(stockPlusUpdate);
+            return false;
+        }
 
         // 주문 상세 만들기
         List<OrderListDetail> orderListDetails  =  orderListRequestDto.stream()

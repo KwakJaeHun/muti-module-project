@@ -5,6 +5,7 @@ import com.jhkwak.userservice.dto.UserResponseDto;
 import com.jhkwak.userservice.dto.SignupRequestDto;
 import com.jhkwak.userservice.entity.Response;
 import com.jhkwak.userservice.jwt.JwtUtil;
+import com.jhkwak.userservice.service.TokenService;
 import com.jhkwak.userservice.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class UserController {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final TokenService tokenService;
 
     // 회원가입
     @GetMapping("/signup-page")
@@ -58,10 +60,20 @@ public class UserController {
     // 로그아웃
     @GetMapping("/logout")
     @ResponseBody
-    public ResponseEntity<?> logout(HttpServletResponse response){
+    public ResponseEntity<?> logout(
+            @RequestHeader("Authorization") String accessToken,
+            @RequestHeader("RefreshToken") String refreshToken,
+            HttpServletResponse response
+    )
+    {
 
         // jwt 삭제
         jwtUtil.jwtDelete(response);
+        
+
+        // 기존 token blacklist 추가
+        tokenService.addToBlacklist(accessToken);
+        tokenService.addToBlacklist(refreshToken);
 
         return ResponseEntity.ok("Logout successful");
     }
@@ -88,6 +100,11 @@ public class UserController {
         String userId = jwtUtil.getUserInfoFromToken(token).getSubject();
 
         if (!jwtUtil.validateToken(token) && jwtUtil.validateToken(refreshToken)) {
+            
+            // 기존 token blacklist 추가
+            tokenService.addToBlacklist(accessToken);
+            tokenService.addToBlacklist(refreshToken);
+            
             String newAccessToken = jwtUtil.createAccessToken(Long.parseLong(userId));
             String newRefreshToken = jwtUtil.createRefreshToken();
 
